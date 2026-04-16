@@ -1,5 +1,27 @@
 # Research: LLM Wiki Agent — Rust CLI Tool
 
+## Architecture Decision: Dual-Mode Operation
+
+**Decision**: Support both agent-companion and standalone modes.
+
+**Agent-companion mode** (default, no API key):
+The coding agent (Claude Code, Copilot CLI, etc.) IS the LLM. It reads
+schema files, does all reasoning/generation, and calls wiki-tool for
+deterministic operations only: search, graph, lint, cache, extract, index.
+
+**Standalone mode** (requires API key):
+wiki-tool makes its own LLM API calls for ingest and query. For CI
+pipelines, batch scripts, or environments without a coding agent.
+
+**Rationale**: In local development, the user already has a coding agent
+running — having wiki-tool make separate LLM API calls doubles token
+usage for no benefit. But CI pipelines and automation scripts don't have
+an interactive coding agent, so standalone mode is needed there.
+
+**Alternatives considered**:
+- Agent-only: Would block CI/automation use cases.
+- Standalone-only: Wastes tokens when a coding agent is already present.
+
 ## Technology Decisions
 
 ### 1. Markdown Parser: comrak
