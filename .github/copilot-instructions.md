@@ -64,3 +64,10 @@ The abstract design document describing the LLM Wiki concept. This repo implemen
 ## Spec Kit Integration
 
 This repo uses [Spec Kit](https://github.com/Luro02/spec-kit) (`.specify/` directory) for feature specification workflows. Spec Kit agents and prompts live in `.github/agents/` and `.github/prompts/`. The constitution template in `.specify/memory/constitution.md` is a placeholder — not yet configured for this project.
+
+## Active Technologies
+- Rust 1.75+ (2021 edition) (001-llm-wiki-agent-rust)
+- File-based (JSON cache files, markdown wiki pages) (001-llm-wiki-agent-rust)
+
+## Recent Changes
+- 001-llm-wiki-agent-rust: Added Rust 1.75+ (2021 edition)
