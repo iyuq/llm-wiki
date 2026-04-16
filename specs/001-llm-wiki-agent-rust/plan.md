@@ -26,7 +26,7 @@ and targets all major coding agents.
 
 ## Technical Context
 
-**Language/Version**: Rust 1.75+ (2021 edition)
+**Language/Version**: Rust 1.95.0+ (2024 edition)
 **Primary Dependencies**:
 - `clap` — CLI argument parsing
 - `comrak` — Markdown parsing (CommonMark + extensions)
