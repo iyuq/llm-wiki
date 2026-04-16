@@ -1,5 +1,33 @@
 # CLI Interface Contract: wiki-tool
 
+## Dual-Mode Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Agent-Companion Mode (default, no API key)             │
+│                                                         │
+│  Coding Agent (IS the LLM)                              │
+│    ├─ Reads schema (CLAUDE.md / AGENTS.md / etc.)       │
+│    ├─ Does reasoning, analysis, wiki page generation    │
+│    └─ Shells out to wiki-tool for:                      │
+│         search, graph, lint, cache, extract, index      │
+│                                                         │
+│  Commands available: search, graph, lint, cache,        │
+│                      extract, index, init               │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│  Standalone Mode (requires API key, for CI/automation)  │
+│                                                         │
+│  wiki-tool makes its own LLM calls:                     │
+│    ├─ ingest: two-pass analysis → generation            │
+│    └─ query: search → context → synthesize answer       │
+│                                                         │
+│  Additional commands: ingest, query                     │
+│  Requires: .wiki-tool.toml with LLM provider config     │
+└─────────────────────────────────────────────────────────┘
+```
+
 ## Global Options
 
 ```
@@ -15,36 +43,12 @@ Options:
   -V, --version          Print version
 ```
 
-## Commands
-
-### ingest
-
-Ingest a source document into the wiki.
-
-```
-wiki-tool ingest [OPTIONS] <SOURCE_PATH>
-
-Arguments:
-  <SOURCE_PATH>    Path to source file (relative to raw/)
-
-Options:
-  --force          Re-ingest even if cached
-  --dry-run        Show what would be created without writing
-  --no-stream      Disable streaming output
-```
-
-**Exit codes**: 0 = success, 1 = LLM error, 2 = file not found,
-3 = parse error
-
-**Stdout** (default): Streaming analysis + generated page summaries
-**Stdout** (--json): `{ "pages_created": [...], "pages_updated": [...],
-  "review_items": [...], "cached": false }`
-
----
+## Agent-Companion Commands (no LLM, no API key)
 
 ### search
 
-Search wiki content by keyword.
+Search wiki content by keyword. Agents use this to find relevant
+pages before reading them.
 
 ```
 wiki-tool search [OPTIONS] <QUERY>
@@ -58,6 +62,128 @@ Options:
 ```
 
 **Stdout**: Ranked list of matching pages with scores
+
+---
+
+### lint
+
+Health-check the wiki for quality issues. Agents use this to
+identify problems, then fix them directly.
+
+```
+wiki-tool lint [OPTIONS]
+
+Options:
+  --fix            Auto-fix simple issues (e.g., rebuild index)
+  --category <C>   Filter: orphans, broken-links, missing-pages,
+                   contradictions, stale
+```
+
+**Stdout**: Issue list with file:line references
+**Exit codes**: 0 = no issues, 1 = issues found
+
+---
+
+### graph
+
+Build or update the knowledge graph. Agents use this for
+context discovery and relationship visualization.
+
+```
+wiki-tool graph [OPTIONS]
+
+Options:
+  -o, --output <PATH>  Output file [default: graph.json]
+  --format <FMT>       Output format: json, dot [default: json]
+  --communities        Include Louvain community detection
+  --related <PAGE>     Show pages related to a specific page
+```
+
+**Stdout**: Graph statistics (nodes, edges, communities)
+
+---
+
+### cache
+
+Check or manage the ingest cache. Agents use this to decide
+whether a source needs re-ingesting.
+
+```
+wiki-tool cache check <SOURCE_PATH>    # check if cached
+wiki-tool cache list                   # list all cached sources
+wiki-tool cache clear [SOURCE_PATH]    # clear cache entry
+```
+
+**Stdout** (check): `cached` or `not-cached` + hash info
+**Stdout** (--json): `{ "cached": true, "hash": "abc...", "files": [...] }`
+
+---
+
+### extract
+
+Extract text content from a document. Agents use this to read
+PDFs and other binary formats before processing.
+
+```
+wiki-tool extract <FILE_PATH>
+
+Supported formats: .md, .txt, .pdf, .docx, .html
+```
+
+**Stdout**: Extracted plain text content
+
+---
+
+### index
+
+Rebuild wiki/index.md from current wiki pages. Agents call
+this after making wiki changes.
+
+```
+wiki-tool index [OPTIONS]
+
+Options:
+  --check          Verify index is up-to-date (exit 1 if stale)
+```
+
+---
+
+### init
+
+Initialize a new wiki project.
+
+```
+wiki-tool init [OPTIONS]
+
+Options:
+  --schema <AGENT>   Generate schema for: claude, codex, gemini,
+                     copilot, all [default: all]
+```
+
+Creates: raw/, wiki/, .wiki-tool.toml, schema files
+
+---
+
+## Standalone Commands (requires LLM config + API key)
+
+### ingest
+
+Ingest a source document into the wiki using two-pass LLM pipeline.
+
+```
+wiki-tool ingest [OPTIONS] <SOURCE_PATH>
+
+Arguments:
+  <SOURCE_PATH>    Path to source file (relative to raw/)
+
+Options:
+  --force          Re-ingest even if cached
+  --dry-run        Show what would be created without writing
+  --no-stream      Disable streaming output
+```
+
+**Exit codes**: 0 = success, 1 = LLM error (no API key or
+provider misconfigured), 2 = file not found, 3 = parse error
 
 ---
 
@@ -78,57 +204,6 @@ Options:
 ```
 
 **Stdout**: Answer with `[[wikilink]]` citations
-
----
-
-### lint
-
-Health-check the wiki for quality issues.
-
-```
-wiki-tool lint [OPTIONS]
-
-Options:
-  --fix            Auto-fix simple issues (e.g., update index)
-  --category <C>   Filter by category: orphans, broken-links,
-                   missing-pages, contradictions, stale
-```
-
-**Stdout**: Issue list with file:line references
-**Exit codes**: 0 = no issues, 1 = issues found
-
----
-
-### graph
-
-Build or update the knowledge graph.
-
-```
-wiki-tool graph [OPTIONS]
-
-Options:
-  -o, --output <PATH>  Output file [default: graph.json]
-  --format <FMT>       Output format: json, dot [default: json]
-  --communities        Include Louvain community detection
-```
-
-**Stdout**: Graph statistics (nodes, edges, communities)
-
----
-
-### init
-
-Initialize a new wiki project in the current directory.
-
-```
-wiki-tool init [OPTIONS]
-
-Options:
-  --schema <AGENT>   Generate schema for: claude, codex, gemini,
-                     copilot, all [default: all]
-```
-
-Creates: raw/, wiki/, .wiki-tool.toml, schema files
 
 ---
 

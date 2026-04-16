@@ -6,13 +6,23 @@
 ## Summary
 
 Build a high-performance Rust CLI tool (`wiki-tool`) that implements the
-LLM Wiki pattern — a coding-agent skill for incrementally building and
-maintaining a personal knowledge base from source documents. The tool
-combines the best ideas from both reference implementations: the desktop
-app's two-pass chain-of-thought ingest pipeline, multi-provider LLM
-support, and vector search, with the agent skill's simplicity, schema-
-driven workflow, and multi-agent compatibility. It targets all major
-coding agents (Claude Code, Codex, Copilot CLI, Gemini CLI).
+LLM Wiki pattern — a utility for incrementally building and maintaining
+a personal knowledge base from source documents. The tool operates in
+two modes:
+
+1. **Agent-companion mode** (default, no API key): The coding agent
+   (Claude Code, Copilot CLI, Codex, Gemini CLI) IS the LLM. It reads
+   the schema file, does all reasoning/generation, and shells out to
+   `wiki-tool` for deterministic compute-heavy operations: search,
+   graph building, lint, cache checks, document extraction, and index
+   management.
+
+2. **Standalone mode** (with API key, for CI/automation): `wiki-tool`
+   makes its own LLM API calls for ingest and query. Useful in CI
+   pipelines, batch scripts, or environments without a coding agent.
+
+The tool combines the best ideas from both reference implementations
+and targets all major coding agents.
 
 ## Technical Context
 
@@ -77,12 +87,15 @@ wiki-tool/
 │   ├── lib.rs               # Library root
 │   ├── commands/
 │   │   ├── mod.rs
-│   │   ├── ingest.rs        # Two-pass ingest pipeline
-│   │   ├── query.rs         # Wiki query with citations
-│   │   ├── search.rs        # Full-text search
-│   │   ├── lint.rs          # Wiki health check
-│   │   └── graph.rs         # Knowledge graph builder
-│   ├── llm/
+│   │   ├── ingest.rs        # Standalone: two-pass ingest pipeline
+│   │   ├── query.rs         # Standalone: wiki query with citations
+│   │   ├── search.rs        # Both: full-text search (no LLM)
+│   │   ├── lint.rs          # Both: wiki health check (no LLM)
+│   │   ├── graph.rs         # Both: knowledge graph builder (no LLM)
+│   │   ├── cache.rs         # Both: SHA256 cache check (no LLM)
+│   │   ├── extract.rs       # Both: document text extraction (no LLM)
+│   │   └── index.rs         # Both: rebuild index.md (no LLM)
+│   ├── llm/                 # Only used in standalone mode
 │   │   ├── mod.rs
 │   │   ├── client.rs        # Streaming LLM client
 │   │   ├── providers.rs     # Multi-provider abstraction

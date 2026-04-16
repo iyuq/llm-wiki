@@ -147,8 +147,16 @@ matching pages are returned ranked by relevance.
   wiki pages (title, type, tags, sources[], last_updated).
 - **FR-004**: System MUST update wiki/index.md and wiki/log.md on
   every ingest operation.
-- **FR-005**: System MUST support multiple LLM providers (OpenAI,
-  Anthropic, Google, Ollama, custom endpoints).
+- **FR-005**: System MUST support two operational modes:
+  (a) agent-companion mode (no API key) providing search, graph,
+  lint, cache, extract, and index commands; (b) standalone mode
+  (with API key) adding ingest and query commands with built-in
+  LLM calls.
+- **FR-005a**: In agent-companion mode, the coding agent reads
+  schema files and handles all LLM reasoning; wiki-tool provides
+  only deterministic compute-heavy operations.
+- **FR-005b**: In standalone mode, the tool MUST support multiple
+  LLM providers (OpenAI, Anthropic, Google, Ollama, custom).
 - **FR-006**: System MUST extract and maintain `[[wikilinks]]` as
   cross-references.
 - **FR-007**: System MUST provide keyword-based search with CJK
