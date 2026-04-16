@@ -1,0 +1,6 @@
+[submodule "doc/llm-wiki-agent"]
+	path = doc/llm-wiki-agent
+	url = https://github.com/SamurAIGPT/llm-wiki-agent.git
+[submodule "doc/llm_wiki"]
+	path = doc/llm_wiki
+	url = https://github.com/nashsu/llm_wiki.git
