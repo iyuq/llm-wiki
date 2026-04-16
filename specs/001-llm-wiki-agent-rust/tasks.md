@@ -23,9 +23,9 @@
 
 **Purpose**: Create the Rust project skeleton and configure build tooling
 
-- [ ] T001 Create project directory structure with all subdirectories per plan.md: wiki-tool/src/{commands,llm,wiki,graph,search,cache,extract}/, wiki-tool/tests/{integration,fixtures/raw,fixtures/wiki}/, wiki-tool/schema/
-- [ ] T002 Initialize wiki-tool/Cargo.toml with all dependencies: clap (derive), comrak, tantivy, petgraph, reqwest (rustls-tls, stream), serde (derive), serde_yaml, serde_json, sha2, tokio (full), pdf-extract, encoding_rs, toml, chrono
-- [ ] T003 [P] Configure Rust tooling: wiki-tool/rustfmt.toml (edition 2024) and clippy configuration in wiki-tool/Cargo.toml
+- [X] T001 Create project directory structure with all subdirectories per plan.md: wiki-tool/src/{commands,llm,wiki,graph,search,cache,extract}/, wiki-tool/tests/{integration,fixtures/raw,fixtures/wiki}/, wiki-tool/schema/
+- [X] T002 Initialize wiki-tool/Cargo.toml with all dependencies: clap (derive), comrak, tantivy, petgraph, reqwest (rustls-tls, stream), serde (derive), serde_yaml, serde_json, sha2, tokio (full), pdf-extract, encoding_rs, toml, chrono
+- [X] T003 [P] Configure Rust tooling: wiki-tool/rustfmt.toml (edition 2024) and clippy configuration in wiki-tool/Cargo.toml
 
 ---
 
@@ -35,13 +35,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create library root with module declarations (wiki, graph, search, cache, extract, config, commands, llm) and shared error enum (WikiToolError) with Display/Error derives in wiki-tool/src/lib.rs
-- [ ] T005 [P] Implement PageType enum (Source, Entity, Concept, Synthesis) and WikiPage struct with YAML frontmatter serialization/deserialization using serde_yaml and comrak in wiki-tool/src/wiki/mod.rs and wiki-tool/src/wiki/page.rs
-- [ ] T006 [P] Implement `[[wikilink]]` extraction regex parser and slug resolution (title → filename mapping) in wiki-tool/src/wiki/wikilinks.rs
-- [ ] T007 [P] Implement TOML config file parsing with LlmConfig and ProviderConfig structs (api_url, api_key, model, max_tokens, timeout_secs) and defaults in wiki-tool/src/config.rs
-- [ ] T008 [P] Implement document extractors: markdown reader via comrak (strips frontmatter, returns plain text) in wiki-tool/src/extract/markdown.rs, plain text reader with encoding_rs auto-detection in wiki-tool/src/extract/text.rs, PDF text extraction via pdf-extract in wiki-tool/src/extract/pdf.rs, and format-dispatch module in wiki-tool/src/extract/mod.rs
-- [ ] T009 Build CLI entry point with clap derive API: global options (--config, --project, --verbose, --quiet, --json, --version) and subcommand enum routing in wiki-tool/src/main.rs
-- [ ] T010 Implement init subcommand that creates raw/, wiki/{sources,entities,concepts,syntheses}/, .wiki-tool/ directories, default .wiki-tool.toml config, and placeholder schema files in wiki-tool/src/commands/mod.rs
+- [X] T004 Create library root with module declarations (wiki, graph, search, cache, extract, config, commands, llm) and shared error enum (WikiToolError) with Display/Error derives in wiki-tool/src/lib.rs
+- [X] T005 [P] Implement PageType enum (Source, Entity, Concept, Synthesis) and WikiPage struct with YAML frontmatter serialization/deserialization using serde_yaml and comrak in wiki-tool/src/wiki/mod.rs and wiki-tool/src/wiki/page.rs
+- [X] T006 [P] Implement `[[wikilink]]` extraction regex parser and slug resolution (title → filename mapping) in wiki-tool/src/wiki/wikilinks.rs
+- [X] T007 [P] Implement TOML config file parsing with LlmConfig and ProviderConfig structs (api_url, api_key, model, max_tokens, timeout_secs) and defaults in wiki-tool/src/config.rs
+- [X] T008 [P] Implement document extractors: markdown reader via comrak (strips frontmatter, returns plain text) in wiki-tool/src/extract/markdown.rs, plain text reader with encoding_rs auto-detection in wiki-tool/src/extract/text.rs, PDF text extraction via pdf-extract in wiki-tool/src/extract/pdf.rs, and format-dispatch module in wiki-tool/src/extract/mod.rs
+- [X] T009 Build CLI entry point with clap derive API: global options (--config, --project, --verbose, --quiet, --json, --version) and subcommand enum routing in wiki-tool/src/main.rs
+- [X] T010 Implement init subcommand that creates raw/, wiki/{sources,entities,concepts,syntheses}/, .wiki-tool/ directories, default .wiki-tool.toml config, and placeholder schema files in wiki-tool/src/commands/mod.rs
 
 **Checkpoint**: Foundation ready — all core types, config parsing, extraction, and CLI framework are in place. User story implementation can now begin.
 
@@ -55,17 +55,17 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Implement SHA256-based ingest cache with JSON file persistence (.wiki-tool/ingest-cache.json), CacheEntry struct (hash, timestamp, files_written), and lookup/insert/clear operations in wiki-tool/src/cache/mod.rs and wiki-tool/src/cache/ingest_cache.rs
-- [ ] T012 [P] [US1] Implement persistent ingest queue with crash recovery: IngestQueue and IngestTask structs (id, source_path, status, retry_count, error), JSON persistence (.wiki-tool/ingest-queue.json), max 3 retries, and resume-on-start logic in wiki-tool/src/cache/queue.rs
-- [ ] T013 [P] [US1] Implement index.md catalog generation: scan wiki/ for all pages, read frontmatter, generate categorized listing (by PageType), and atomic file write in wiki-tool/src/wiki/index.rs
-- [ ] T014 [P] [US1] Implement log.md chronological entry appending: timestamped entry format, append-only writes, and operation type recording (ingest, update, delete) in wiki-tool/src/wiki/log.rs
-- [ ] T015 [US1] Implement async streaming HTTP client with SSE line parsing (data:, event:, [DONE] handling) using reqwest + tokio for LLM API responses in wiki-tool/src/llm/mod.rs and wiki-tool/src/llm/client.rs
-- [ ] T016 [US1] Implement multi-provider abstraction supporting OpenAI, Anthropic, Google, Ollama, and custom endpoints: provider-specific request/response mapping, API key resolution (env var or config), and unified streaming interface in wiki-tool/src/llm/providers.rs
-- [ ] T017 [P] [US1] Create ingest prompt templates (Pass 1: entity/concept extraction with contradiction detection; Pass 2: wiki page generation in ---FILE: block format) and query prompt templates (synthesis with citations) in wiki-tool/src/llm/prompts.rs
-- [ ] T018 [US1] Implement cache subcommand with three sub-commands: `check <SOURCE_PATH>` (cached/not-cached + hash), `list` (all cached sources), `clear [SOURCE_PATH]` (remove cache entries) in wiki-tool/src/commands/cache.rs
-- [ ] T019 [P] [US1] Implement extract subcommand that dispatches to format-specific extractors based on file extension (.md, .txt, .pdf) and outputs plain text to stdout in wiki-tool/src/commands/extract.rs
-- [ ] T020 [US1] Implement two-pass ingest pipeline command: SHA256 cache check → queue task → Pass 1 (analysis via LLM) → Pass 2 (generation via LLM) → parse ---FILE: blocks → write wiki pages → update index.md → append log.md → update cache → report created/updated pages and review items in wiki-tool/src/commands/ingest.rs
-- [ ] T021 [US1] Implement index rebuild subcommand with full rebuild and --check flag (verify index is up-to-date, exit 1 if stale) in wiki-tool/src/commands/index.rs
+- [X] T011 [P] [US1] Implement SHA256-based ingest cache with JSON file persistence (.wiki-tool/ingest-cache.json), CacheEntry struct (hash, timestamp, files_written), and lookup/insert/clear operations in wiki-tool/src/cache/mod.rs and wiki-tool/src/cache/ingest_cache.rs
+- [X] T012 [P] [US1] Implement persistent ingest queue with crash recovery: IngestQueue and IngestTask structs (id, source_path, status, retry_count, error), JSON persistence (.wiki-tool/ingest-queue.json), max 3 retries, and resume-on-start logic in wiki-tool/src/cache/queue.rs
+- [X] T013 [P] [US1] Implement index.md catalog generation: scan wiki/ for all pages, read frontmatter, generate categorized listing (by PageType), and atomic file write in wiki-tool/src/wiki/index.rs
+- [X] T014 [P] [US1] Implement log.md chronological entry appending: timestamped entry format, append-only writes, and operation type recording (ingest, update, delete) in wiki-tool/src/wiki/log.rs
+- [X] T015 [US1] Implement async streaming HTTP client with SSE line parsing (data:, event:, [DONE] handling) using reqwest + tokio for LLM API responses in wiki-tool/src/llm/mod.rs and wiki-tool/src/llm/client.rs
+- [X] T016 [US1] Implement multi-provider abstraction supporting OpenAI, Anthropic, Google, Ollama, and custom endpoints: provider-specific request/response mapping, API key resolution (env var or config), and unified streaming interface in wiki-tool/src/llm/providers.rs
+- [X] T017 [P] [US1] Create ingest prompt templates (Pass 1: entity/concept extraction with contradiction detection; Pass 2: wiki page generation in ---FILE: block format) and query prompt templates (synthesis with citations) in wiki-tool/src/llm/prompts.rs
+- [X] T018 [US1] Implement cache subcommand with three sub-commands: `check <SOURCE_PATH>` (cached/not-cached + hash), `list` (all cached sources), `clear [SOURCE_PATH]` (remove cache entries) in wiki-tool/src/commands/cache.rs
+- [X] T019 [P] [US1] Implement extract subcommand that dispatches to format-specific extractors based on file extension (.md, .txt, .pdf) and outputs plain text to stdout in wiki-tool/src/commands/extract.rs
+- [X] T020 [US1] Implement two-pass ingest pipeline command: SHA256 cache check → queue task → Pass 1 (analysis via LLM) → Pass 2 (generation via LLM) → parse ---FILE: blocks → write wiki pages → update index.md → append log.md → update cache → report created/updated pages and review items in wiki-tool/src/commands/ingest.rs
+- [X] T021 [US1] Implement index rebuild subcommand with full rebuild and --check flag (verify index is up-to-date, exit 1 if stale) in wiki-tool/src/commands/index.rs
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Users can ingest documents, skip cached sources, check cache status, extract text, and rebuild the index.
 
@@ -79,9 +79,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T022 [P] [US5] Implement CJK-aware bigram tokenizer as a custom tantivy TokenFilter: detect CJK Unicode ranges, split into bigrams, pass Latin text through standard tokenizer in wiki-tool/src/search/tokenizer.rs
-- [ ] T023 [US5] Implement tantivy-based BM25 search engine: define schema (title, content, path, page_type, tags), build index from wiki/ pages, query with title-boost scoring (title match > content match), return ranked results with snippets in wiki-tool/src/search/mod.rs and wiki-tool/src/search/engine.rs
-- [ ] T024 [US5] Implement search subcommand with <QUERY> argument, --limit (default 10), --snippet flag, ranked output formatting, and performance timing (query_ms) in wiki-tool/src/commands/search.rs
+- [X] T022 [P] [US5] Implement CJK-aware bigram tokenizer as a custom tantivy TokenFilter: detect CJK Unicode ranges, split into bigrams, pass Latin text through standard tokenizer in wiki-tool/src/search/tokenizer.rs
+- [X] T023 [US5] Implement tantivy-based BM25 search engine: define schema (title, content, path, page_type, tags), build index from wiki/ pages, query with title-boost scoring (title match > content match), return ranked results with snippets in wiki-tool/src/search/mod.rs and wiki-tool/src/search/engine.rs
+- [X] T024 [US5] Implement search subcommand with <QUERY> argument, --limit (default 10), --snippet flag, ranked output formatting, and performance timing (query_ms) in wiki-tool/src/commands/search.rs
 
 **Checkpoint**: At this point, User Stories 1 AND 5 should both work independently. Users can ingest documents and search the wiki.
 
@@ -95,7 +95,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Implement query subcommand: search for relevant pages via tantivy → traverse wikilink neighbors for context expansion → assemble context window (--context N pages, default 5) → LLM synthesis with citation formatting → stream answer to stdout → optional --save flag creating synthesis page in wiki/syntheses/ with proper frontmatter in wiki-tool/src/commands/query.rs
+- [X] T025 [US2] Implement query subcommand: search for relevant pages via tantivy → traverse wikilink neighbors for context expansion → assemble context window (--context N pages, default 5) → LLM synthesis with citation formatting → stream answer to stdout → optional --save flag creating synthesis page in wiki/syntheses/ with proper frontmatter in wiki-tool/src/commands/query.rs
 
 **Checkpoint**: At this point, User Stories 1, 5, AND 2 should all work independently. Users can ingest, search, and query the wiki with cited answers.
 
@@ -109,7 +109,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Implement lint subcommand: parse all wiki pages → check orphan pages (no inbound wikilinks) → check broken wikilinks (target page missing) → check missing pages (referenced but not created) → check contradictions (conflicting frontmatter across pages) → check stale content (last_updated age) → report issues with file:line references and suggestions → --fix auto-repair (rebuild index, remove broken links) → --category filter (orphans, broken-links, missing-pages, contradictions, stale) → exit code 0/1 in wiki-tool/src/commands/lint.rs
+- [X] T026 [US3] Implement lint subcommand: parse all wiki pages → check orphan pages (no inbound wikilinks) → check broken wikilinks (target page missing) → check missing pages (referenced but not created) → check contradictions (conflicting frontmatter across pages) → check stale content (last_updated age) → report issues with file:line references and suggestions → --fix auto-repair (rebuild index, remove broken links) → --category filter (orphans, broken-links, missing-pages, contradictions, stale) → exit code 0/1 in wiki-tool/src/commands/lint.rs
 
 **Checkpoint**: At this point, User Stories 1, 5, 2, AND 3 should all work independently. The wiki has full ingest, search, query, and quality checking.
 
@@ -123,10 +123,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T027 [P] [US4] Implement graph construction: scan all wiki pages, create petgraph DiGraph with GraphNode structs (id, title, node_type, community_id, link_count), add edges from parsed wikilinks in wiki-tool/src/graph/mod.rs and wiki-tool/src/graph/builder.rs
-- [ ] T028 [P] [US4] Implement 4-signal relevance scoring per research.md: direct links (weight 3.0), source overlap (weight 4.0), common neighbors via Adamic-Adar index (weight 1.5), type affinity (weight 1.0), combined into GraphEdge weight in wiki-tool/src/graph/relevance.rs
-- [ ] T029 [US4] Implement Louvain community detection algorithm on petgraph: modularity optimization, iterative node reassignment, community merging, output community_id assignments on GraphNode structs in wiki-tool/src/graph/community.rs
-- [ ] T030 [US4] Implement graph subcommand: build graph → compute relevance → optional --communities for Louvain detection → output to --output path (default graph.json) in --format json or dot → --related <PAGE> for single-page neighborhood → print stats (nodes, edges, communities) in wiki-tool/src/commands/graph.rs
+- [X] T027 [P] [US4] Implement graph construction: scan all wiki pages, create petgraph DiGraph with GraphNode structs (id, title, node_type, community_id, link_count), add edges from parsed wikilinks in wiki-tool/src/graph/mod.rs and wiki-tool/src/graph/builder.rs
+- [X] T028 [P] [US4] Implement 4-signal relevance scoring per research.md: direct links (weight 3.0), source overlap (weight 4.0), common neighbors via Adamic-Adar index (weight 1.5), type affinity (weight 1.0), combined into GraphEdge weight in wiki-tool/src/graph/relevance.rs
+- [X] T029 [US4] Implement Louvain community detection algorithm on petgraph: modularity optimization, iterative node reassignment, community merging, output community_id assignments on GraphNode structs in wiki-tool/src/graph/community.rs
+- [X] T030 [US4] Implement graph subcommand: build graph → compute relevance → optional --communities for Louvain detection → output to --output path (default graph.json) in --format json or dot → --related <PAGE> for single-page neighborhood → print stats (nodes, edges, communities) in wiki-tool/src/commands/graph.rs
 
 **Checkpoint**: All user stories are now independently functional. The wiki supports ingest, search, query, lint, and knowledge graph visualization.
 
@@ -136,11 +136,11 @@
 
 **Purpose**: Agent integration, documentation, structured output, and validation across all stories
 
-- [ ] T031 [P] Create agent schema files documenting all wiki-tool commands, usage patterns, and workflows tailored to each agent in wiki-tool/schema/CLAUDE.md, wiki-tool/schema/AGENTS.md, wiki-tool/schema/GEMINI.md, wiki-tool/schema/COPILOT.md
-- [ ] T032 [P] Write project README.md with installation (cargo build --release), setup, usage examples, architecture overview, dual-mode explanation, and performance targets in wiki-tool/README.md
-- [ ] T033 Implement --json structured output mode across all commands: ingest result (pages_created, pages_updated, review_items), search result (results array with score/snippet, query_ms), lint result (issues array with category/file/line), graph result (nodes/edges/communities/stats), cache result (cached boolean, hash) per CLI contract schemas in wiki-tool/src/commands/*.rs
-- [ ] T034 [P] Create test fixtures: sample raw/ source documents (markdown, text, PDF) and pre-built wiki/ state (pages with frontmatter, wikilinks, known lint issues) in wiki-tool/tests/fixtures/raw/ and wiki-tool/tests/fixtures/wiki/
-- [ ] T035 Validate quickstart.md end-to-end workflow: init → configure provider → ingest source → search → query → lint → graph, verifying each step produces expected output
+- [X] T031 [P] Create agent schema files documenting all wiki-tool commands, usage patterns, and workflows tailored to each agent in wiki-tool/schema/CLAUDE.md, wiki-tool/schema/AGENTS.md, wiki-tool/schema/GEMINI.md, wiki-tool/schema/COPILOT.md
+- [X] T032 [P] Write project README.md with installation (cargo build --release), setup, usage examples, architecture overview, dual-mode explanation, and performance targets in wiki-tool/README.md
+- [X] T033 Implement --json structured output mode across all commands: ingest result (pages_created, pages_updated, review_items), search result (results array with score/snippet, query_ms), lint result (issues array with category/file/line), graph result (nodes/edges/communities/stats), cache result (cached boolean, hash) per CLI contract schemas in wiki-tool/src/commands/*.rs
+- [X] T034 [P] Create test fixtures: sample raw/ source documents (markdown, text, PDF) and pre-built wiki/ state (pages with frontmatter, wikilinks, known lint issues) in wiki-tool/tests/fixtures/raw/ and wiki-tool/tests/fixtures/wiki/
+- [X] T035 Validate quickstart.md end-to-end workflow: init → configure provider → ingest source → search → query → lint → graph, verifying each step produces expected output
 
 ---
 
