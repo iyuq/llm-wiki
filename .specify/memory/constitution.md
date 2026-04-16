@@ -1,50 +1,173 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: 1.0.0 → 1.0.1
+- Modified principles:
+  - VI. Reference Implementation Awareness: clarified that both
+    reference projects are tracked as git submodules
+- Added sections: None
+- Removed sections: None
+- Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ no changes needed
+  - .specify/templates/spec-template.md ✅ no changes needed
+  - .specify/templates/tasks-template.md ✅ no changes needed
+- Follow-up TODOs: None
+-->
+# LLM Wiki Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Persistent Wiki Over Transient RAG
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+The LLM MUST incrementally build and maintain a persistent,
+interlinked wiki of markdown files — not re-derive answers from
+raw sources on every query. Knowledge is compiled once, kept
+current, and compounded over time. The wiki is the primary
+artifact; chat history is ephemeral.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale**: Traditional RAG rediscovers knowledge from scratch
+on every question. A persistent wiki accumulates cross-references,
+flags contradictions, and synthesizes across sources once — then
+keeps the result available and up to date.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Three-Layer Architecture
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+Every LLM Wiki instance MUST maintain three distinct layers:
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+1. **Raw sources** (`raw/`) — immutable, user-curated documents.
+   The LLM MUST NOT modify files in this layer.
+2. **Wiki** (`wiki/`) — LLM-generated and LLM-maintained markdown
+   with YAML frontmatter and `[[wikilinks]]`. The LLM owns this
+   layer entirely.
+3. **Schema** — a configuration document that defines wiki
+   structure, conventions, and workflows. The user and LLM
+   co-evolve this over time.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**Rationale**: Separating immutable sources from generated wiki
+content preserves the source of truth while giving the LLM full
+ownership of the knowledge layer. The schema provides governance
+without hard-coding conventions.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### III. Incremental Ingest with Traceability
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Every wiki page MUST carry YAML frontmatter including `title`,
+`type`, `tags`, `sources[]`, and `last_updated`. When a new source
+is ingested, the LLM MUST:
+- Create or update a source summary page
+- Update `wiki/index.md` (content catalog)
+- Append to `wiki/log.md` (chronological record)
+- Update all affected entity, concept, and synthesis pages
+- Preserve `[[wikilink]]` cross-references
+
+SHA256-based caching SHOULD be used to skip unchanged sources.
+
+**Rationale**: Traceability back to raw sources is essential for
+trust. The index and log provide navigability at scale. Caching
+prevents redundant work.
+
+### IV. Knowledge Graph Integrity
+
+Cross-references via `[[wikilinks]]` MUST be maintained as a
+first-class concern. Periodic lint operations MUST check for:
+- Orphan pages with no inbound links
+- Broken wikilinks pointing to non-existent pages
+- Concepts mentioned but lacking dedicated pages
+- Contradictions between pages
+- Stale claims superseded by newer sources
+
+**Rationale**: The value of a wiki compounds through its
+connections. An unmaintained link graph degrades into a flat
+document collection.
+
+### V. Human Curates, LLM Maintains
+
+The human's role is to curate sources, direct analysis, ask
+questions, and make editorial decisions. The LLM's role is
+summarizing, cross-referencing, filing, updating, and all
+bookkeeping. The LLM MUST NOT independently add raw sources
+or make editorial judgment calls without human direction.
+
+**Rationale**: LLMs excel at the tedious maintenance that causes
+humans to abandon wikis. Keeping editorial control with the human
+preserves intentionality and trust.
+
+### VI. Reference Implementation Awareness
+
+This project maintains two reference implementations of the LLM
+Wiki pattern. Contributors and agents MUST understand both when
+making architectural decisions:
+
+1. **`doc/llm-wiki-agent/`** (git submodule →
+   `github.com/SamurAIGPT/llm-wiki-agent`) — A coding-agent skill
+   (Claude Code, Codex, Gemini CLI). No build step. Slash commands
+   drive ingest, query, lint, and graph operations. Python tools
+   in `tools/`.
+2. **`doc/llm_wiki/`** (git submodule →
+   `github.com/nashsu/llm_wiki`) — A cross-platform desktop app
+   (Tauri 2 + React 19 + TypeScript + Rust). Features chain-of-
+   thought ingest, 4-signal knowledge graph, Louvain community
+   detection, vector search via LanceDB, and a Chrome web clipper.
+
+Both descend from Karpathy's original LLM Wiki pattern documented
+in `doc/llm-wiki.md`.
+
+**Rationale**: Awareness of both implementations prevents duplicate
+work, ensures feature parity where appropriate, and informs
+architectural decisions with concrete precedent.
+
+## Reference Implementations
+
+| Aspect | Agent Skill (`doc/llm-wiki-agent/`) | Desktop App (`doc/llm_wiki/`) |
+|---|---|---|
+| Runtime | LLM coding agent (Claude/Codex/Gemini) | Tauri 2 (Rust) + React 19 (TypeScript) |
+| Build | None | `npm install && npm run build` / `cargo build` |
+| Ingest | LLM reads source → writes wiki pages | Two-step chain-of-thought with SHA256 cache |
+| Search | Index file + optional `qmd` | LanceDB vector store + BM25 |
+| Graph | Python script in `tools/` | graphology + sigma.js (4-signal relevance) |
+| Schema | `CLAUDE.md` / `AGENTS.md` / `GEMINI.md` | `schema.md` + `purpose.md` |
+| Wiki format | YAML frontmatter + `[[wikilinks]]` | YAML frontmatter + `[[wikilinks]]` |
+| CI | None | GitHub Actions (macOS/Ubuntu/Windows) |
+
+## Development Workflow
+
+### Source Management
+
+- Raw sources are added to `raw/` and MUST NOT be modified after
+  initial placement.
+- Sources SHOULD be ingested one at a time with human review of
+  generated wiki updates, unless batch mode is explicitly chosen.
+
+### Wiki Maintenance
+
+- `wiki/index.md` MUST be updated on every ingest operation.
+- `wiki/log.md` entries MUST use the format:
+  `## [YYYY-MM-DD] <operation> | <title>`
+- Valuable query answers SHOULD be filed back into the wiki as
+  synthesis pages to compound knowledge.
+- Periodic lint passes SHOULD be run to maintain wiki health.
+
+### Code Contributions
+
+- Changes to the desktop app (`doc/llm_wiki/`) MUST pass the
+  existing CI pipeline (frontend build + Rust build).
+- Changes to the agent skill (`doc/llm-wiki-agent/`) MUST preserve
+  compatibility with Claude Code, Codex, and Gemini CLI.
+- The shared wiki page format (YAML frontmatter + `[[wikilinks]]`)
+  MUST remain consistent across both implementations.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution is the authoritative reference for all LLM Wiki
+development in this repository. It supersedes ad-hoc decisions and
+MUST be consulted when making architectural or workflow changes.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- **Amendments** require updating this file, incrementing the
+  version, and documenting changes in the Sync Impact Report
+  (HTML comment at the top of this file).
+- **Version policy**: MAJOR for principle removals or
+  redefinitions, MINOR for new principles or sections, PATCH for
+  clarifications and wording fixes.
+- **Compliance**: All PRs and code reviews SHOULD verify alignment
+  with these principles. Deviations MUST be justified in the PR
+  description.
+
+**Version**: 1.0.1 | **Ratified**: 2026-04-16 | **Last Amended**: 2026-04-16
