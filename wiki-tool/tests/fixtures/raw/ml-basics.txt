@@ -1,0 +1,5 @@
+Machine learning is a subset of artificial intelligence that focuses on building systems that learn from data. Key approaches include supervised learning, unsupervised learning, and reinforcement learning.
+
+Deep learning, a subset of machine learning, uses neural networks with multiple layers to model complex patterns in data. Common architectures include CNNs for image processing, RNNs for sequential data, and Transformers for various tasks.
+
+Notable researchers in the field include Geoffrey Hinton, Yann LeCun, and Yoshua Bengio, who are often called the "Godfathers of AI" for their contributions to deep learning.
